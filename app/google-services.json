@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "489476095122",
+    "firebase_url": "https://zinder-dc0b2.firebaseio.com",
+    "project_id": "zinder-dc0b2",
+    "storage_bucket": "zinder-dc0b2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489476095122:android:83ce9c8e80c0e8c1",
+        "android_client_info": {
+          "package_name": "com.example.ishaandhamija.zinder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "489476095122-03nbf7mhcr2k5pqf790lrouedghq0is7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ishaandhamija.zinder",
+            "certificate_hash": "d24e81a42e129b164468756eef91f67818afa594"
+          }
+        },
+        {
+          "client_id": "489476095122-vu4u2h7chbtk58n2rbo28lj51ehd5joa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5uOgKuJShPdP-qfkq8ZC5N43gTY8eiH0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "489476095122-vu4u2h7chbtk58n2rbo28lj51ehd5joa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
