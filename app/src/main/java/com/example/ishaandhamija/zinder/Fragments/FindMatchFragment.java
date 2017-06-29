@@ -89,21 +89,21 @@ public class FindMatchFragment extends Fragment {
         getUsers = new GetUsers() {
             @Override
             public void onSuccess(ArrayList<User2> userList) {
-                ArrayList<Restaurant> mySelectedRestaurants = DashboardActivity.getSelectedRestaurants();
+//                ArrayList<Restaurant> mySelectedRestaurants = DashboardActivity.getSelectedRestaurants();
 
-                if (mySelectedRestaurants != null) {
+//                if (mySelectedRestaurants != null) {
                     for (int i = 0; i < userList.size(); i++) {
                         User2 ekUser = userList.get(i);
-                        if (ekUser.getRestaurants() != null) {
-                            ArrayList<Restaurant> ekUserKeRestaurants = ekUser.getRestaurants();
-                            for (int j = 0; j < ekUserKeRestaurants.size(); j++) {
-                                for (int k = 0; k < mySelectedRestaurants.size(); k++) {
-                                    if (ekUserKeRestaurants.get(j).getName().equals(mySelectedRestaurants.get(k).getName())) {
+//                        if (ekUser.getRestaurants() != null) {
+//                            ArrayList<Restaurant> ekUserKeRestaurants = ekUser.getRestaurants();
+//                            for (int j = 0; j < ekUserKeRestaurants.size(); j++) {
+//                                for (int k = 0; k < mySelectedRestaurants.size(); k++) {
+//                                    if (ekUserKeRestaurants.get(j).getName().equals(mySelectedRestaurants.get(k).getName())) {
                                         selectedUsers.add(ekUser);
-                                    }
-                                }
-                            }
-                        }
+//                                    }
+//                                }
+//                            }
+//                        }
                     }
 
                     if (selectedUsers != null) {
@@ -140,10 +140,10 @@ public class FindMatchFragment extends Fragment {
                             mSwipeView.addView(new TinderCard(mContext, profile, mSwipeView));
                         }
                     }
-                }
-                else{
-                    Toast.makeText(mContext, "No Restaurants Added to Favourites", Toast.LENGTH_SHORT).show();
-                }
+//                }
+//                else{
+//                    Toast.makeText(mContext, "No Restaurants Added to Favourites", Toast.LENGTH_SHORT).show();
+//                }
                 loadingDialog.dismiss();
             }
 
@@ -156,4 +156,6 @@ public class FindMatchFragment extends Fragment {
 
         return rootView;
     }
+
+
 }

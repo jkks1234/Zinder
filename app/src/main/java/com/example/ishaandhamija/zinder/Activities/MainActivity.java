@@ -2,11 +2,14 @@ package com.example.ishaandhamija.zinder.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.support.v7.widget.Toolbar;
 import android.widget.Button;
 
 import com.example.ishaandhamija.zinder.R;
+import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class MainActivity extends BaseActivity implements View.OnClickListener{
 
@@ -43,4 +46,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener{
         }
     }
 
+    @Override
+    public void onBackPressed() {
+    }
 }

@@ -5,13 +5,16 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -24,7 +27,9 @@
             android:name=".Activities.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Activities.WelcomeScreenActivity">
+        <activity
+            android:name=".Activities.WelcomeScreenActivity"
+            android:theme="@style/AppTheme.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,19 +38,24 @@
         </activity>
         <activity android:name=".Activities.BaseActivity" />
         <activity android:name=".Activities.LoginActivity" />
-        <activity android:name=".Activities.SignupActivity"
-            android:windowSoftInputMode="stateHidden"/>
+        <activity
+            android:name=".Activities.SignupActivity"
+            android:windowSoftInputMode="stateHidden" />
         <activity android:name=".Activities.ResetPasswordActivity" />
         <activity
             android:name=".Activities.DashboardActivity"
             android:label="@string/title_activity_dashboard"
             android:theme="@style/AppTheme.NoActionBar">
+            <!--<meta-data-->
+                <!--android:name="android.app.default_searchable"-->
+                <!--android:value=".SearchResultsActivity" />-->
         </activity>
-        <activity android:name=".Activities.RestaurantDetailsActivity"
+        <activity
+            android:name=".Activities.RestaurantDetailsActivity"
             android:label=""
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
-        <activity android:name="com.gun0912.tedpicker.ImagePickerActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name="com.gun0912.tedpicker.ImagePickerActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme_picker" />
     </application>

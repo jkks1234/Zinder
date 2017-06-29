@@ -3,6 +3,7 @@ package com.example.ishaandhamija.zinder.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,14 +27,18 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.example.ishaandhamija.zinder.Fragments.DashBoardFragment;
 import com.example.ishaandhamija.zinder.Fragments.FindMatchFragment;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
 import com.example.ishaandhamija.zinder.Interfaces.GetResponse;
@@ -43,6 +48,7 @@ import com.example.ishaandhamija.zinder.Models.User2;
 import com.example.ishaandhamija.zinder.R;
 import com.example.ishaandhamija.zinder.Utils.GPSTracker;
 import com.example.ishaandhamija.zinder.Utils.NearbyRestaurants;
+import com.example.ishaandhamija.zinder.Utils.SearchRestaurants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,6 +59,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -67,6 +74,7 @@ public class DashboardActivity extends AppCompatActivity
     Activity activity;
     String latitude, longitude, city = null, area;
     NearbyRestaurants nr;
+    SearchRestaurants sr;
     ProgressDialog pDialog;
     RecyclerView rvList;
     GetLL getLL;
@@ -82,7 +90,8 @@ public class DashboardActivity extends AppCompatActivity
     ProgressDialog pD;
     OnAuthentication oA;
     Bitmap photoToBeDisplayed;
-    public static GPSTracker gpsTracker;
+    GPSTracker gpsTracker;
+    String q;
 
     ImageView userKaPhoto;
     TextView userKaNaam, userKaEmail;
@@ -235,9 +244,37 @@ public class DashboardActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.dashboard, menu);
+
+        MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) item.getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                q = query;
+                sr = new SearchRestaurants(ctx, query, rvList, activity, getResponse);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        return true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -247,7 +284,15 @@ public class DashboardActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.favPlaces) {
+        if (id == R.id.dashboard) {
+            fragManager = getSupportFragmentManager();
+            DashBoardFragment dashboardFragment = new DashBoardFragment();
+            fragTxn = fragManager.beginTransaction();
+            fragTxn.replace(R.id.fragContainer, dashboardFragment);
+            fragTxn.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            fragTxn.commit();
+
+        } else if (id == R.id.favPlaces) {
 
         } else if (id == R.id.findMatch) {
 
@@ -255,16 +300,14 @@ public class DashboardActivity extends AppCompatActivity
             FindMatchFragment findMatchFragment = new FindMatchFragment(this);
             fragTxn = fragManager.beginTransaction();
             fragTxn.replace(R.id.fragContainer,findMatchFragment);
+            fragTxn.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
             fragTxn.commit();
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.aboutUs) {
 
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        } else if (id == R.id.logout) {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(DashboardActivity.this, MainActivity.class));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -342,7 +385,12 @@ public class DashboardActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        nr.getFeedAdapter().onActivityResult(requestCode, resultCode, data);
+        if (q == null) {
+            nr.getFeedAdapter().onActivityResult(requestCode, resultCode, data);
+        }
+        else{
+            sr.getFeedAdapter().onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
