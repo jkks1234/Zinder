@@ -13,6 +13,8 @@ public class User2 {
     String name;
     Integer age;
     Integer sex;
+    String city;
+    String profilePicUrl;
     String email;
     String password;
     ArrayList<Restaurant> restaurants;
@@ -21,10 +23,12 @@ public class User2 {
 
     }
 
-    public User2(String name, Integer age, Integer sex, String email, String password, ArrayList<Restaurant> restaurants) {
+    public User2(String name, Integer age, Integer sex, String city, String profilePicUrl, String email, String password, ArrayList<Restaurant> restaurants) {
         this.name = name;
         this.age = age;
         this.sex = sex;
+        this.city = city;
+        this.profilePicUrl = profilePicUrl;
         this.email = email;
         this.password = password;
         this.restaurants = restaurants;
@@ -52,5 +56,13 @@ public class User2 {
 
     public ArrayList<Restaurant> getRestaurants() {
         return restaurants;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getProfilePicUrl() {
+        return profilePicUrl;
     }
 }

@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -25,11 +27,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.example.ishaandhamija.zinder.Fragments.FindMatchFragment;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
 import com.example.ishaandhamija.zinder.Interfaces.GetResponse;
+import com.example.ishaandhamija.zinder.Interfaces.OnAuthentication;
 import com.example.ishaandhamija.zinder.Models.Restaurant;
 import com.example.ishaandhamija.zinder.Models.User2;
 import com.example.ishaandhamija.zinder.R;
@@ -41,7 +49,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class DashboardActivity extends AppCompatActivity
@@ -59,11 +73,19 @@ public class DashboardActivity extends AppCompatActivity
     GetResponse getResponse;
     FirebaseAuth auth;
     ArrayList<Restaurant> restaurantArrayList;
+    public static ArrayList<Restaurant> selectedRestaurants;
     DatabaseReference firebaseDatabase;
     FirebaseDatabase firebaseInstance;
     String userId;
     FragmentManager fragManager;
     FragmentTransaction fragTxn;
+    ProgressDialog pD;
+    OnAuthentication oA;
+    Bitmap photoToBeDisplayed;
+    public static GPSTracker gpsTracker;
+
+    ImageView userKaPhoto;
+    TextView userKaNaam, userKaEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,13 +100,30 @@ public class DashboardActivity extends AppCompatActivity
         pDialog = new ProgressDialog(this);
         auth = FirebaseAuth.getInstance();
         firebaseInstance = FirebaseDatabase.getInstance();
-        firebaseDatabase = firebaseInstance.getReference("users");
+        firebaseDatabase = firebaseInstance.getReference("userss");
         userId = auth.getCurrentUser().getUid();
+
+        userKaPhoto = (ImageView) findViewById(R.id.userKaPhoto);
+        userKaNaam = (TextView) findViewById(R.id.userKaNaam);
+        userKaEmail = (TextView) findViewById(R.id.userKaEmail);
+
+        pD = new ProgressDialog(this);
+        pD.setMessage("Fetching Nearby Restaurants...");
+        pD.show();
+
+        oA = new OnAuthentication() {
+            @Override
+            public void onSuccess(Bitmap photoUrl) {
+                userKaPhoto.setImageBitmap(photoUrl);
+//                pD.dismiss();
+            }
+        };
 
         getLL = new GetLL() {
             @Override
             public void onSuccess(Context ctx, String area, String city, String latitude, String longitude, RecyclerView rvList) {
-                Toast.makeText(ctx, "New Delhi - " + city, Toast.LENGTH_LONG).show();
+                Toast.makeText(ctx, city, Toast.LENGTH_LONG).show();
+                Log.d("Success", "onSuccess: " + area);
                 nr = new NearbyRestaurants(ctx, area, latitude, longitude, rvList, activity, getResponse);
             }
 
@@ -114,6 +153,32 @@ public class DashboardActivity extends AppCompatActivity
                         }
 
                         ArrayList<Restaurant> selectedList = user.getRestaurants();
+
+                        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+                        View hView =  navigationView.getHeaderView(0);
+                        userKaNaam = (TextView)hView.findViewById(R.id.userKaNaam);
+                        userKaEmail = (TextView) hView.findViewById(R.id.userKaEmail);
+                        userKaPhoto = (ImageView) hView.findViewById(R.id.userKaPhoto);
+                        userKaNaam.setText(user.getName());
+                        userKaEmail.setText(user.getEmail());
+
+//                        Bitmap photoToBeDisplayed = null;
+//
+//                        try {
+//                            URL urll = new URL(user.getProfilePicUrl());
+//                            photoToBeDisplayed = BitmapFactory.decodeStream(urll.openConnection().getInputStream());
+//                        } catch (MalformedURLException e) {
+//                            e.printStackTrace();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+
+//                        photoToBeDisplayed = null;
+//                        MyAsync myAsync = new MyAsync();
+//                        myAsync.execute(user.getProfilePicUrl());
+
+//                        oA.onSuccess(photoToBeDisplayed);
+                        pD.dismiss();
 
                         if (selectedList != null){
                             for (int i=0;i<restaurantArrayList.size();i++){
@@ -210,7 +275,7 @@ public class DashboardActivity extends AppCompatActivity
     private void getYourLocation(){
 
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        GPSTracker gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, area, city, latitude, longitude, rvList);
+        gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, rvList);
 
         if (gpsTracker.getIsGPSTrackingEnabled())
         {
@@ -222,6 +287,8 @@ public class DashboardActivity extends AppCompatActivity
             city = gpsTracker.getLocality(this);
 
             area = gpsTracker.getAddressLine(this);
+
+            Log.d("ab", "getYourLocation: " + latitude + "\n" + longitude + "\n" + city + "\n" + area);
 
         }
         else
@@ -283,7 +350,7 @@ public class DashboardActivity extends AppCompatActivity
         super.onResume();
 
             if (restaurantArrayList != null) {
-                ArrayList<Restaurant> selectedRestaurants = new ArrayList<>();
+                selectedRestaurants = new ArrayList<>();
                 for (int i = 0; i < restaurantArrayList.size(); i++) {
                     if (restaurantArrayList.get(i).isSelected()) {
                         selectedRestaurants.add(restaurantArrayList.get(i));
@@ -314,5 +381,39 @@ public class DashboardActivity extends AppCompatActivity
                 Log.e(TAG, "Failed to read user", error.toException());
             }
         });
+    }
+
+    public class MyAsync extends AsyncTask<String, Void, Bitmap>{
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+
+            try {
+                URL url = new URL(params[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                photoToBeDisplayed = BitmapFactory.decodeStream(input);
+                return photoToBeDisplayed;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+
+            oA.onSuccess(photoToBeDisplayed);
+
+        }
+    }
+
+
+    public static ArrayList<Restaurant> getSelectedRestaurants(){
+        return selectedRestaurants;
     }
 }

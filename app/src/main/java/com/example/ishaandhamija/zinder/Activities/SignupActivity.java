@@ -1,7 +1,14 @@
 package com.example.ishaandhamija.zinder.Activities;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,13 +16,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.ishaandhamija.zinder.Interfaces.OnAuthentication;
 import com.example.ishaandhamija.zinder.Models.Restaurant;
 import com.example.ishaandhamija.zinder.Models.User2;
 import com.example.ishaandhamija.zinder.R;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,18 +36,34 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.gun0912.tedpicker.Config;
+import com.gun0912.tedpicker.ImagePickerActivity;
 
 import java.util.ArrayList;
 
 public class SignupActivity extends AppCompatActivity {
 
-    EditText inputEmail, inputPassword, inputName, inputAge, inputSex;
+    EditText inputEmail, inputPassword, inputName, inputAge, inputSex, inputCity;
     Button btnSignIn, btnSignUp, btnResetPassword;
     ProgressBar progressBar;
     FirebaseAuth auth;
     DatabaseReference firebaseDatabase;
     FirebaseDatabase firebaseInstance;
     FirebaseUser userr;
+    ImageView userImage;
+    FloatingActionButton getPic;
+    StorageReference storageReference;
+    Uri userPicUri = null;
+    String userPicUrl = null;
+    OnAuthentication onAuth;
+    String name, city, email, password;
+    Integer age, sex;
+
+    private static final int INTENT_REQUEST_GET_IMAGES = 13;
 
     String userId;
 
@@ -59,11 +86,16 @@ public class SignupActivity extends AppCompatActivity {
         inputAge = (EditText) findViewById(R.id.age);
         inputName = (EditText) findViewById(R.id.name);
         inputSex = (EditText) findViewById(R.id.sex);
+        inputCity = (EditText) findViewById(R.id.city);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnResetPassword = (Button) findViewById(R.id.btn_reset_password);
+        userImage = (ImageView) findViewById(R.id.userImage);
+        getPic = (FloatingActionButton) findViewById(R.id.getPic);
 
         firebaseInstance = FirebaseDatabase.getInstance();
-        firebaseDatabase = firebaseInstance.getReference("users");
+        firebaseDatabase = firebaseInstance.getReference("userss");
+
+        storageReference = FirebaseStorage.getInstance().getReference();
 
         firebaseInstance.getReference("zinder-dc0b2").addValueEventListener(new ValueEventListener() {
             @Override
@@ -74,6 +106,13 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+        getPic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getImages();
             }
         });
 
@@ -95,10 +134,9 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                final String name = inputName.getText().toString().trim();
+                name = inputName.getText().toString().trim();
                 final String stringAge = inputAge.getText().toString().trim();
-                final Integer age = Integer.parseInt(stringAge);
-                final Integer sex;
+                age = Integer.parseInt(stringAge);
                 String stringSex = inputSex.getText().toString().trim();
                 if (stringSex.equals("MALE") || stringSex.equals("Male") || stringSex.equals("M") || stringSex.equals("m") || stringSex.equals("male")){
                     sex = 1;
@@ -106,8 +144,9 @@ public class SignupActivity extends AppCompatActivity {
                 else{
                     sex = 2;
                 }
-                final String email = inputEmail.getText().toString().trim();
-                final String password = inputPassword.getText().toString().trim();
+                city = inputCity.getText().toString().trim();
+                email = inputEmail.getText().toString().trim();
+                password = inputPassword.getText().toString().trim();
 
                 if (TextUtils.isEmpty(name)) {
                     Toast.makeText(getApplicationContext(), "Enter Name!", Toast.LENGTH_SHORT).show();
@@ -121,6 +160,11 @@ public class SignupActivity extends AppCompatActivity {
 
                 if (TextUtils.isEmpty(stringSex)) {
                     Toast.makeText(getApplicationContext(), "Enter Sex!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (TextUtils.isEmpty(city)){
+                    Toast.makeText(getApplicationContext(), "Enter City!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -149,6 +193,11 @@ public class SignupActivity extends AppCompatActivity {
                     return;
                 }
 
+                if (userPicUri == null){
+                    Toast.makeText(SignupActivity.this, "Please Upload Profile Picture", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 progressBar.setVisibility(View.VISIBLE);
 
                 auth.createUserWithEmailAndPassword(email, password)
@@ -164,12 +213,14 @@ public class SignupActivity extends AppCompatActivity {
                                     Toast.makeText(SignupActivity.this, "Sign Up Hogya", Toast.LENGTH_SHORT).show();
 //                                    startActivity(new Intent(SignupActivity.this, MainActivity.class));
 //                                    finish();
-                                    if (TextUtils.isEmpty(userId)){
-                                        createUser(name, age, sex, email, password);
-                                    }
-                                    else{
-                                        updateUser(name, age, sex, email, password);
-                                    }
+                                    uploadImage(userPicUri);
+//                                    if (userPicUrl != null) {
+//                                        if (TextUtils.isEmpty(userId)) {
+//                                            createUser(name, age, sex, city, email, password);
+//                                        } else {
+//                                            updateUser(name, age, sex, city, email, password);
+//                                        }
+//                                    }
                                 }
                             }
                         });
@@ -177,8 +228,19 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
 
+        onAuth = new OnAuthentication() {
+            @Override
+            public void onSuccess(Bitmap a) {
+                if (TextUtils.isEmpty(userId)) {
+                    createUser(name, age, sex, city, email, password);
+                } else {
+                    updateUser(name, age, sex, city, email, password);
+                }
+            }
+        };
+
     }
-    public void createUser(String name, Integer age, Integer sex, String email, String password) {
+    public void createUser(String name, Integer age, Integer sex, String city, String email, String password) {
 
         if (TextUtils.isEmpty(userId)) {
             userr = auth.getCurrentUser();
@@ -187,7 +249,7 @@ public class SignupActivity extends AppCompatActivity {
 
         ArrayList<Restaurant> al = new ArrayList<>();
 
-        User2 user = new User2(name, age, sex, email, password, al);
+        User2 user = new User2(name, age, sex, city, userPicUrl, email, password, al);
 
         firebaseDatabase.child(userId).setValue(user);
 
@@ -219,7 +281,7 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
-    public void updateUser(String name, Integer age, Integer sex, String email, String password) {
+    public void updateUser(String name, Integer age, Integer sex, String city, String email, String password) {
 
         if (!TextUtils.isEmpty(name))
             firebaseDatabase.child(userId).child("name").setValue(name);
@@ -229,6 +291,9 @@ public class SignupActivity extends AppCompatActivity {
 
         if (sex != null)
             firebaseDatabase.child(userId).child("sex").setValue(sex);
+
+        if (city != null)
+            firebaseDatabase.child(userId).child("city").setValue(sex);
 
         if (!TextUtils.isEmpty(email))
             firebaseDatabase.child(userId).child("email").setValue(email);
@@ -242,5 +307,66 @@ public class SignupActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         progressBar.setVisibility(View.GONE);
+    }
+
+    private void getImages() {
+        Config config = new Config();
+        config.setSelectionMin(1);
+        config.setSelectionLimit(1);
+        ImagePickerActivity.setConfig(config);
+
+        Intent intent  = new Intent(this, ImagePickerActivity.class);
+        startActivityForResult(intent,INTENT_REQUEST_GET_IMAGES);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resuleCode, Intent intent) {
+        super.onActivityResult(requestCode, resuleCode, intent);
+
+        if (requestCode == INTENT_REQUEST_GET_IMAGES && resuleCode == Activity.RESULT_OK ) {
+
+            ArrayList<Uri>  image_uris = intent.getParcelableArrayListExtra(ImagePickerActivity.EXTRA_IMAGE_URIS);
+            userPicUri = Uri.parse("file://" + image_uris.get(0).toString());
+            userImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            userImage.setImageURI(image_uris.get(0));
+
+        }
+    }
+
+    private void uploadImage(Uri uri){
+
+        if (uri != null) {
+
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setTitle("Uploading Image...");
+
+            StorageReference profileRef = storageReference.child("profileImages/" + inputEmail.getText().toString().trim());
+
+            final Bitmap noUse = null;
+
+            profileRef.putFile(uri)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            progressDialog.dismiss();
+                            userPicUrl = taskSnapshot.getDownloadUrl().toString();
+                            onAuth.onSuccess(noUse);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            progressDialog.dismiss();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0 * taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
+                            progressDialog.setMessage(((int) progress) + "% Uploaded...");
+                        }
+                    })
+            ;
+        }
     }
 }

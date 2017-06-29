@@ -40,15 +40,18 @@ public class NearbyRestaurants {
     String Area, Lat, Lon;
     ArrayList<Restaurant> restList = new ArrayList<>();
     RecyclerView rvList;
-    public static final String TAG = "Yolo";
+    public static final String TAG = "PPOP";
     FeedAdapter feedAdapter;
     GetResponse gr;
+    String url;
 
     public NearbyRestaurants(Context ctx, String area, String lat, String lon, RecyclerView rvList, Activity activity, GetResponse gr) {
         this.ctx = ctx;
         this.Area = area;
-        this.Lat = "28.6315";
-        this.Lon = "77.2167";
+        this.Lat = lat;
+        this.Lon = lon;
+        url = "https://developers.zomato.com/api/v2.1/geocode?user-key=9b71538cb6d3419677ab58e98d85cfd6&lat=" + lat + "&lon=" + lon;
+        Log.d("urlll", "NearbyRestaurants: " + url);
         this.rvList = rvList;
         this.activity = activity;
         this.gr = gr;
@@ -58,7 +61,7 @@ public class NearbyRestaurants {
         requestQueue.add(jsonObjectRequest2);
     }
 
-    JsonObjectRequest jsonObjectRequest2 = new JsonObjectRequest("https://developers.zomato.com/api/v2.1/search?user-key=9b71538cb6d3419677ab58e98d85cfd6&lat=" + "28.6315" + "&lon=" + "77.2167",
+    JsonObjectRequest jsonObjectRequest2 = new JsonObjectRequest("https://developers.zomato.com/api/v2.1/geocode?user-key=9b71538cb6d3419677ab58e98d85cfd6&lat=" + "28.6391" + "&lon=" + "77.0868",
             null,
             new Response.Listener<JSONObject>() {
                 @Override
@@ -66,31 +69,26 @@ public class NearbyRestaurants {
                     try
                     {
                         Log.d(TAG, "onResponse: " + Lat + "\t" + Lon);
-                        for (int i=0;i<response.getJSONArray("restaurants").length();i++){
-                            String name = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getString("name").toString();
-                            String locality = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getJSONObject("location").getString("locality").toString();
-                            String picUrl = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getString("featured_image").toString();
-                            String thumb = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getString("thumb").toString();
-                            Integer costForTwo = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getInt("average_cost_for_two");
-                            String rating = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getJSONObject("user_rating").getString("aggregate_rating").toString();
-//                            Integer contactNo = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getInt("phone_numbers");
+                        for (int i=0;i<response.getJSONArray("nearby_restaurants").length();i++){
+                            String name = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getString("name").toString();
+                            String locality = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getJSONObject("location").getString("locality").toString();
+                            String picUrl = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getString("featured_image").toString();
+                            String thumb = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getString("thumb").toString();
+                            Integer costForTwo = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getInt("average_cost_for_two");
+                            String rating = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getJSONObject("user_rating").getString("aggregate_rating").toString();
+//                            Integer contactNo = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getInt("phone_numbers");
                             Integer contactNo = 1234;
-                            String address = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getJSONObject("location").getString("address").toString();
-                            String menu = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getString("menu_url").toString();
-                            String photos = response.getJSONArray("restaurants").getJSONObject(i).getJSONObject("restaurant").getString("photos_url").toString();
+                            String address = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getJSONObject("location").getString("address").toString();
+                            String menu = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getString("menu_url").toString();
+                            String photos = response.getJSONArray("nearby_restaurants").getJSONObject(i).getJSONObject("restaurant").getString("photos_url").toString();
 
                             Restaurant restaurant = new Restaurant(name, locality, picUrl, costForTwo, rating, contactNo, address, menu, photos, thumb, false);
                             restList.add(restaurant);
+                            Log.d(TAG, "onResponse: Naam : " + name);
                         }
+
                         gr.onSuccess(restList);
-//                        for (int i=0;i<restList.size();i++){
-//                            Log.d(TAG, "onResponse: " + restList.get(i).getName());
-//                        }
-//                        for (int i=0;i<restList.size();i++){
-//                            if (restList.get(i).isSelected() == true){
-//                                Log.d("Selected", "onResponse: " + restList.get(i).getName());
-//                            }
-//                        }
+
                         feedAdapter = new FeedAdapter(ctx, restList, activity);
                         rvList.setLayoutManager(new GridLayoutManager(ctx, 2));
                         rvList.setAdapter(feedAdapter);

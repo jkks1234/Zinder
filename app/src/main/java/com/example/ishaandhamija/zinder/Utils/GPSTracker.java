@@ -45,9 +45,9 @@ public class GPSTracker implements LocationListener {
 
     boolean isGPSTrackingEnabled = false;
 
-    Location location;
-    Double latitude;
-    Double longitude;
+    Location location = null;
+    Double latitude = new Double(0);
+    Double longitude = new Double(0);
 
     int geocoderMaxResults = 1;
 
@@ -62,15 +62,11 @@ public class GPSTracker implements LocationListener {
     RecyclerView rvList;
     String la, lo;
 
-    public GPSTracker(Context context, LocationManager locationManager, GetLL getLL, Context ctx, String area, String city, String la, String lo, RecyclerView rvList) {
+    public GPSTracker(Context context, LocationManager locationManager, GetLL getLL, Context ctx, RecyclerView rvList) {
         this.mContext = context;
         this.locationManager = locationManager;
         this.getLL = getLL;
         this.ctx = ctx;
-        this.area = area;
-        this.city = city;
-        this.la = la;
-        this.lo = lo;
         this.rvList = rvList;
         getLocation(locationManager);
     }
@@ -88,7 +84,8 @@ public class GPSTracker implements LocationListener {
 
                 provider_info = LocationManager.GPS_PROVIDER;
 
-            } else if (isNetworkEnabled) {
+            }
+            else if (isNetworkEnabled) {
                 this.isGPSTrackingEnabled = true;
 
                 Log.d(TAG, "Application use Network State to get GPS coordinates");
@@ -100,14 +97,18 @@ public class GPSTracker implements LocationListener {
             if (!provider_info.isEmpty()) {
 
                 //noinspection MissingPermission
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                locationManager.requestLocationUpdates(provider_info,
                         MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
 
                 if (locationManager != null) {
                     //noinspection MissingPermission
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    while (location == null) {
+                        location = locationManager.getLastKnownLocation(provider_info);
+                    }
+                    Log.d("Success", "getLocation: " + location.toString());
                     updateGPSCoordinates();
-                    getLL.onSuccess(ctx, area, city, latitude.toString(), longitude.toString(), rvList);
+                    Log.d("Success", "getLocation: " + getLatitude().toString() + "\t" + getLongitude().toString());
+                    getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
                 }
                 else{
                     getLL.onError("Location Not Found");
@@ -127,7 +128,7 @@ public class GPSTracker implements LocationListener {
         }
     }
 
-    public double getLatitude() {
+    public Double getLatitude() {
         if (location != null) {
             latitude = location.getLatitude();
         }
@@ -135,7 +136,7 @@ public class GPSTracker implements LocationListener {
         return latitude;
     }
 
-    public double getLongitude() {
+    public Double getLongitude() {
         if (location != null) {
             longitude = location.getLongitude();
         }
