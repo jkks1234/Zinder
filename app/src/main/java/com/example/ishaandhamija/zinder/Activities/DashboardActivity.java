@@ -139,7 +139,7 @@ public class DashboardActivity extends AppCompatActivity
             @Override
             public void onError(String errorMsg) {
                 Toast.makeText(ctx, errorMsg, Toast.LENGTH_SHORT).show();
-                nr = new NearbyRestaurants(ctx, area, latitude, longitude, rvList, activity, getResponse);
+//                nr = new NearbyRestaurants(ctx, area, latitude, longitude, rvList, activity, getResponse);
 //                finish();
             }
         };
@@ -259,7 +259,12 @@ public class DashboardActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextSubmit(String query) {
                 q = query;
-                sr = new SearchRestaurants(ctx, query, rvList, activity, getResponse);
+                if (q == ""){
+                    nr = new NearbyRestaurants(ctx, area, latitude, longitude, rvList, activity, getResponse);
+                }
+                else {
+                    sr = new SearchRestaurants(ctx, query, rvList, activity, getResponse);
+                }
                 return false;
             }
 
@@ -315,7 +320,7 @@ public class DashboardActivity extends AppCompatActivity
         return true;
     }
 
-    private void getYourLocation(){
+    public void getYourLocation(){
 
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, rvList);
@@ -369,9 +374,6 @@ public class DashboardActivity extends AppCompatActivity
 
         @Override
         protected Void doInBackground(Void... params) {
-
-//            RequestQueue requestQueue = Volley.newRequestQueue(ctx);
-//            requestQueue.add(nr.getJsonObjectRequest2());
             return null;
         }
 
@@ -385,7 +387,19 @@ public class DashboardActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (q == null) {
+        if (requestCode == 9876){
+            Log.d("OOPP", "onActivityResult: " + gpsTracker.getIsGPSTrackingEnabled());
+            LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
+            if ((lm.isProviderEnabled(LocationManager.GPS_PROVIDER) || (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)))){
+                startActivity(new Intent(DashboardActivity.this, DashboardActivity.class));
+            }
+            else{
+                finish();
+                Toast.makeText(ctx, "Please Turn On Location", Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+        if (q == null || q == "") {
             nr.getFeedAdapter().onActivityResult(requestCode, resultCode, data);
         }
         else{
@@ -459,7 +473,6 @@ public class DashboardActivity extends AppCompatActivity
 
         }
     }
-
 
     public static ArrayList<Restaurant> getSelectedRestaurants(){
         return selectedRestaurants;

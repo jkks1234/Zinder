@@ -1,6 +1,7 @@
 package com.example.ishaandhamija.zinder.Utils;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
@@ -18,12 +19,14 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.ishaandhamija.zinder.Activities.DashboardActivity;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
 import com.example.ishaandhamija.zinder.R;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
 
@@ -33,6 +36,7 @@ import java.util.Locale;
 
 public class GPSTracker implements LocationListener {
 
+    private static final int LOC_REQ_CODE = 9876;
     private static String TAG = GPSTracker.class.getName();
     private final Context mContext;
     private final LocationManager locationManager;
@@ -169,7 +173,9 @@ public class GPSTracker implements LocationListener {
             public void onClick(DialogInterface dialog, int which)
             {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                mContext.startActivity(intent);
+//                mContext.startActivity(intent);
+                ((Activity) mContext).startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), LOC_REQ_CODE);
+
             }
         });
 
@@ -179,6 +185,8 @@ public class GPSTracker implements LocationListener {
             public void onClick(DialogInterface dialog, int which)
             {
                 dialog.cancel();
+                ((Activity) mContext).finish();
+                Toast.makeText(mContext, "Please Turn On Location", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -280,5 +288,7 @@ public class GPSTracker implements LocationListener {
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < 5000);
     }
+
+
 
 }
