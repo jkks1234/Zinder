@@ -109,9 +109,7 @@ public class GPSTracker implements LocationListener {
                     while (location == null) {
                         location = locationManager.getLastKnownLocation(provider_info);
                     }
-                    Log.d("Success", "getLocation: " + location.toString());
                     updateGPSCoordinates();
-                    Log.d("Success", "getLocation: " + getLatitude().toString() + "\t" + getLongitude().toString());
                     getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
                 }
                 else{

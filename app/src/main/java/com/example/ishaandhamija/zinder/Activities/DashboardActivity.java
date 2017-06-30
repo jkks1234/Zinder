@@ -328,6 +328,11 @@ public class DashboardActivity extends AppCompatActivity
         if (gpsTracker.getIsGPSTrackingEnabled())
         {
 
+//            if (gpsTracker.getLatitude() != null){
+//                finish();
+//                Toast.makeText(ctx, "Location Not Found", Toast.LENGTH_SHORT).show();
+//            }
+
             latitude = String.valueOf(gpsTracker.getLatitude());
 
             longitude = String.valueOf(gpsTracker.getLongitude());
@@ -336,7 +341,11 @@ public class DashboardActivity extends AppCompatActivity
 
             area = gpsTracker.getAddressLine(this);
 
-            Log.d("ab", "getYourLocation: " + latitude + "\n" + longitude + "\n" + city + "\n" + area);
+//            latitude = "28.6961";
+//            longitude = "77.1527";
+//            city = "New Delhi";
+//            area = "Kohat Enclave";
+//            getLL.onSuccess(ctx, area, city, latitude, longitude,rvList);
 
         }
         else
