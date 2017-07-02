@@ -86,7 +86,7 @@ public class NearbyRestaurants {
 
                             gr.onSuccess(restList);
 
-                            feedAdapter = new FeedAdapter(ctx, restList, activity);
+                            feedAdapter = new FeedAdapter(ctx, restList, activity, "NearbyRestaurants");
                             rvList.setLayoutManager(new GridLayoutManager(ctx, 2));
                             rvList.setAdapter(feedAdapter);
                         }

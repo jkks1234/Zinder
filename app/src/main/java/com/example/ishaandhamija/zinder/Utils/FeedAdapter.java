@@ -2,7 +2,9 @@ package com.example.ishaandhamija.zinder.Utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,7 +14,15 @@ import android.view.ViewGroup;
 import com.example.ishaandhamija.zinder.Activities.DashboardActivity;
 import com.example.ishaandhamija.zinder.Activities.RestaurantDetailsActivity;
 import com.example.ishaandhamija.zinder.Models.Restaurant;
+import com.example.ishaandhamija.zinder.Models.User2;
 import com.example.ishaandhamija.zinder.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -26,13 +36,25 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedHolder> {
     Context ctx;
     Activity activity;
     ArrayList<Restaurant> restaurantArrayList;
+    String fragName;
+
+    FirebaseAuth auth;
+    DatabaseReference firebaseDatabase;
+    FirebaseDatabase firebaseInstance;
+    String userId;
 
     public static final Integer REQ_CODE = 1001;
 
-    public FeedAdapter(Context ctx, ArrayList<Restaurant> restaurantArrayList, Activity activity) {
+    public FeedAdapter(Context ctx, ArrayList<Restaurant> restaurantArrayList, Activity activity, String fragName) {
         this.ctx = ctx;
         this.restaurantArrayList = restaurantArrayList;
         this.activity = activity;
+        this.fragName = fragName;
+
+        auth = FirebaseAuth.getInstance();
+        firebaseInstance = FirebaseDatabase.getInstance();
+        firebaseDatabase = firebaseInstance.getReference("userss");
+        userId = auth.getCurrentUser().getUid();
     }
 
     @Override
@@ -44,9 +66,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedHolder> {
     }
 
     @Override
-    public void onBindViewHolder(FeedHolder holder, int position) {
+    public void onBindViewHolder(final FeedHolder holder, final int position) {
 
         final Restaurant restaurant = restaurantArrayList.get(position);
+        final Integer pos = position;
         holder.name.setText(restaurant.getName());
         holder.locality.setText(restaurant.getLocality());
         holder.costForTwo.setText("Cost for Two : Rs. " + restaurant.getCostForTwo().toString());
@@ -84,6 +107,74 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedHolder> {
             }
 
         });
+
+        if (fragName.equals("favPlaces")){
+            holder.vv.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    AlertDialog.Builder alertDialog = new AlertDialog.Builder(ctx);
+
+                    alertDialog.setTitle("Remove");
+                    alertDialog.setMessage("Remove from Favourite Places?");
+                    alertDialog.setIcon(R.mipmap.ic_bin);
+
+                    alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int which) {
+//                            final Integer[] noOfRests = new Integer[1];
+//                            firebaseDatabase.child(userId).addValueEventListener(new ValueEventListener() {
+//                                @Override
+//                                public void onDataChange(DataSnapshot dataSnapshot) {
+//                                    User2 user = dataSnapshot.getValue(User2.class);
+//                                    noOfRests[0] = user.getRestaurants().size();
+//                                }
+//
+//                                @Override
+//                                public void onCancelled(DatabaseError databaseError) {
+//
+//                                }
+//                            });
+//                            firebaseDatabase.child(userId).child("restaurants").child(pos.toString())
+//                                    .addValueEventListener(new ValueEventListener() {
+//                                @Override
+//                                public void onDataChange(DataSnapshot dataSnapshot) {
+//                                    dataSnapshot.getRef().removeValue();
+//                                }
+//
+//                                @Override
+//                                public void onCancelled(DatabaseError databaseError) {
+//
+//                                }
+//                            });
+//
+//                            for (Integer i = pos+1; i< noOfRests[0]; i++) {
+//                                final Integer finalI = i;
+//                                firebaseDatabase.child(userId).child("restaurants")
+//                                        .addValueEventListener(new ValueEventListener() {
+//                                            @Override
+//                                            public void onDataChange(DataSnapshot dataSnapshot) {
+//                                                dataSnapshot.getRef().child(finalI.toString()).setValue(finalI + 1);
+//                                            }
+//
+//                                            @Override
+//                                            public void onCancelled(DatabaseError databaseError) {
+//
+//                                            }
+//                                        });
+//                            }
+                        }
+                    });
+
+                    alertDialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    alertDialog.show();
+                    return true;
+                }
+            });
+        }
     }
 
     @Override

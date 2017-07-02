@@ -2,6 +2,7 @@ package com.example.ishaandhamija.zinder.Activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.example.ishaandhamija.zinder.R;
+import com.example.ishaandhamija.zinder.Utils.GPSTracker;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class WelcomeScreenActivity extends AppCompatActivity {
@@ -28,6 +30,7 @@ public class WelcomeScreenActivity extends AppCompatActivity {
             finish();
         }
         else {
+
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -52,5 +55,4 @@ public class WelcomeScreenActivity extends AppCompatActivity {
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
-
 }

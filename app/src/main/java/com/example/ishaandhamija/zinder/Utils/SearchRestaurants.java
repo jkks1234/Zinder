@@ -69,7 +69,7 @@ public class SearchRestaurants {
 
                             gr.onSuccess(restList);
 
-                            feedAdapter = new FeedAdapter(ctx, restList, activity);
+                            feedAdapter = new FeedAdapter(ctx, restList, activity, "SearchRestaurants");
                             rvList.setLayoutManager(new GridLayoutManager(ctx, 2));
                             rvList.setAdapter(feedAdapter);
                         }

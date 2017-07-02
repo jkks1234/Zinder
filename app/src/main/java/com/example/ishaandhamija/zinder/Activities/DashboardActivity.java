@@ -1,6 +1,7 @@
 package com.example.ishaandhamija.zinder.Activities;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
@@ -9,13 +10,16 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -39,6 +43,7 @@ import android.widget.Toast;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.example.ishaandhamija.zinder.Fragments.DashBoardFragment;
+import com.example.ishaandhamija.zinder.Fragments.FavouritePlacesFragment;
 import com.example.ishaandhamija.zinder.Fragments.FindMatchFragment;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
 import com.example.ishaandhamija.zinder.Interfaces.GetResponse;
@@ -92,6 +97,7 @@ public class DashboardActivity extends AppCompatActivity
     Bitmap photoToBeDisplayed;
     GPSTracker gpsTracker;
     String q;
+    Toolbar toolbar;
 
     ImageView userKaPhoto;
     TextView userKaNaam, userKaEmail;
@@ -102,7 +108,8 @@ public class DashboardActivity extends AppCompatActivity
         setContentView(R.layout.activity_dashboard);
 
         ctx = this;
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("Dashboard");
         setSupportActionBar(toolbar);
 
         rvList = (RecyclerView) findViewById(R.id.rvList);
@@ -118,6 +125,7 @@ public class DashboardActivity extends AppCompatActivity
 
         pD = new ProgressDialog(this);
         pD.setMessage("Fetching Nearby Restaurants...");
+        pD.setCancelable(false);
         pD.show();
 
         oA = new OnAuthentication() {
@@ -170,23 +178,12 @@ public class DashboardActivity extends AppCompatActivity
                         userKaPhoto = (ImageView) hView.findViewById(R.id.userKaPhoto);
                         userKaNaam.setText(user.getName());
                         userKaEmail.setText(user.getEmail());
+//                        Picasso.with(ctx)
+//                                .load(user.getProfilePicUrl())
+//                                .placeholder(R.mipmap.loader)
+//                                .error(R.mipmap.error)
+//                                .into(userKaPhoto);
 
-//                        Bitmap photoToBeDisplayed = null;
-//
-//                        try {
-//                            URL urll = new URL(user.getProfilePicUrl());
-//                            photoToBeDisplayed = BitmapFactory.decodeStream(urll.openConnection().getInputStream());
-//                        } catch (MalformedURLException e) {
-//                            e.printStackTrace();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-
-//                        photoToBeDisplayed = null;
-//                        MyAsync myAsync = new MyAsync();
-//                        myAsync.execute(user.getProfilePicUrl());
-
-//                        oA.onSuccess(photoToBeDisplayed);
                         pD.dismiss();
 
                         if (selectedList != null){
@@ -254,7 +251,6 @@ public class DashboardActivity extends AppCompatActivity
 
         MenuItem item = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) item.getActionView();
-
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -299,6 +295,13 @@ public class DashboardActivity extends AppCompatActivity
 
         } else if (id == R.id.favPlaces) {
 
+            fragManager = getSupportFragmentManager();
+            FavouritePlacesFragment favouritePlacesFragment = new FavouritePlacesFragment(ctx, activity);
+            fragTxn = fragManager.beginTransaction();
+            fragTxn.replace(R.id.fragContainer,favouritePlacesFragment);
+            fragTxn.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            fragTxn.commit();
+
         } else if (id == R.id.findMatch) {
 
             fragManager = getSupportFragmentManager();
@@ -309,6 +312,8 @@ public class DashboardActivity extends AppCompatActivity
             fragTxn.commit();
 
         } else if (id == R.id.aboutUs) {
+
+            Toast.makeText(ctx, "About Us mein Jayenge", Toast.LENGTH_SHORT).show();
 
         } else if (id == R.id.logout) {
             FirebaseAuth.getInstance().signOut();
@@ -322,36 +327,62 @@ public class DashboardActivity extends AppCompatActivity
 
     public void getYourLocation(){
 
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, rvList);
+        final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        if (gpsTracker.getIsGPSTrackingEnabled())
-        {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Dhundaa", "getYourLocation: ");
+                gpsTracker = new GPSTracker(ctx, locationManager, getLL, ctx, rvList);
 
-//            if (gpsTracker.getLatitude() != null){
-//                finish();
-//                Toast.makeText(ctx, "Location Not Found", Toast.LENGTH_SHORT).show();
-//            }
+                if (gpsTracker.getIsGPSTrackingEnabled())
+                {
 
-            latitude = String.valueOf(gpsTracker.getLatitude());
+                    Log.d("Dhundo", "getYourLocation: " + "Finding");
 
-            longitude = String.valueOf(gpsTracker.getLongitude());
+                    latitude = String.valueOf(gpsTracker.getLatitude());
 
-            city = gpsTracker.getLocality(this);
+                    longitude = String.valueOf(gpsTracker.getLongitude());
 
-            area = gpsTracker.getAddressLine(this);
+                    city = gpsTracker.getLocality(ctx);
 
-//            latitude = "28.6961";
-//            longitude = "77.1527";
-//            city = "New Delhi";
-//            area = "Kohat Enclave";
-//            getLL.onSuccess(ctx, area, city, latitude, longitude,rvList);
+                    area = gpsTracker.getAddressLine(ctx);
 
-        }
-        else
-        {
-            gpsTracker.showSettingsAlert();
-        }
+                }
+                else
+                {
+                    gpsTracker.showSettingsAlert();
+                }
+            }
+        }, 5000);
+
+//        Log.d("Dhundaa", "getYourLocation: ");
+//        gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, rvList);
+//
+//        if (gpsTracker.getIsGPSTrackingEnabled())
+//        {
+//
+//            Log.d("Dhundo", "getYourLocation: " + "Finding");
+//
+//            latitude = String.valueOf(gpsTracker.getLatitude());
+//
+//            longitude = String.valueOf(gpsTracker.getLongitude());
+//
+//            city = gpsTracker.getLocality(this);
+//
+//            area = gpsTracker.getAddressLine(this);
+//
+////            latitude = "28.6961";
+////            longitude = "77.1527";
+////            city = "New Delhi";
+////            area = "Kohat Enclave";
+////            getLL.onSuccess(ctx, area, city, latitude, longitude,rvList);
+//
+//        }
+//        else
+//        {
+//            gpsTracker.showSettingsAlert();
+//        }
 
     }
 
@@ -483,7 +514,18 @@ public class DashboardActivity extends AppCompatActivity
         }
     }
 
-    public static ArrayList<Restaurant> getSelectedRestaurants(){
-        return selectedRestaurants;
+    public static Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "src name");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
     }
+
+    public void setActionBarTitle(String title){
+        toolbar.setTitle(title);
+    }
+
 }

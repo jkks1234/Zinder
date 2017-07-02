@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -57,10 +59,18 @@ public class FindMatchFragment extends Fragment {
         this.mContext = ctx;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_find_match, container, false);
+
+        ((DashboardActivity) getActivity()).setActionBarTitle("Find Your Match");
 
         allUsers = new ArrayList<>();
         selectedUsers = new ArrayList<>();
@@ -157,5 +167,9 @@ public class FindMatchFragment extends Fragment {
         return rootView;
     }
 
-
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.action_search);
+        item.setVisible(false);
+    }
 }
