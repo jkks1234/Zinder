@@ -1,28 +1,18 @@
 package com.example.ishaandhamija.zinder.Activities;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -43,16 +33,12 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
-import com.example.ishaandhamija.zinder.AsyncTasks.LocationAsyncTask;
+import com.bumptech.glide.Glide;
 import com.example.ishaandhamija.zinder.Fragments.DashBoardFragment;
 import com.example.ishaandhamija.zinder.Fragments.FavouritePlacesFragment;
 import com.example.ishaandhamija.zinder.Fragments.FindMatchFragment;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
 import com.example.ishaandhamija.zinder.Interfaces.GetResponse;
-import com.example.ishaandhamija.zinder.Interfaces.OnAuthentication;
-import com.example.ishaandhamija.zinder.Interfaces.OnGettingLocation;
 import com.example.ishaandhamija.zinder.Models.Restaurant;
 import com.example.ishaandhamija.zinder.Models.User2;
 import com.example.ishaandhamija.zinder.R;
@@ -65,14 +51,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 public class DashboardActivity extends AppCompatActivity
@@ -99,11 +78,10 @@ public class DashboardActivity extends AppCompatActivity
     FragmentManager fragManager;
     FragmentTransaction fragTxn;
     ProgressDialog pD;
-    OnAuthentication oA;
-    Bitmap photoToBeDisplayed;
     GPSTracker gpsTracker;
     String q;
     Toolbar toolbar;
+    Bitmap photoToBeDisplayed;
 
     ImageView userKaPhoto;
     TextView userKaNaam, userKaEmail;
@@ -134,13 +112,15 @@ public class DashboardActivity extends AppCompatActivity
         pD.setCancelable(false);
         pD.show();
 
-        oA = new OnAuthentication() {
-            @Override
-            public void onSuccess(Bitmap photoUrl) {
-                userKaPhoto.setImageBitmap(photoUrl);
-//                pD.dismiss();
-            }
-        };
+//        photoToBeDisplayed = getBitmapFromURL(auth.getCurrentUser().getPhotoUrl().toString());
+
+//        oA = new OnAuthentication() {
+//            @Override
+//            public void onSuccess(Bitmap photoUrl) {
+//                userKaPhoto.setImageBitmap(photoUrl);
+////                pD.dismiss();
+//            }
+//        };
 
         getLL = new GetLL() {
             @Override
@@ -184,11 +164,37 @@ public class DashboardActivity extends AppCompatActivity
                         userKaPhoto = (ImageView) hView.findViewById(R.id.userKaPhoto);
                         userKaNaam.setText(user.getName());
                         userKaEmail.setText(user.getEmail());
+                        userKaPhoto.setImageResource(R.mipmap.ic_launcher);
+
+                        Glide.with(ctx).load(user.getProfilePicUrl()).into(userKaPhoto);
+
+//                        photoToBeDisplayed = getBitmapFromURL(user.getProfilePicUrl());
+//                        while (photoToBeDisplayed == null){
+//                            userKaPhoto.setImageResource(R.mipmap.loader);
+//                            photoToBeDisplayed = getBitmapFromURL(user.getProfilePicUrl());
+//                        }
+//                        userKaPhoto.setImageBitmap(photoToBeDisplayed);
+
 //                        Picasso.with(ctx)
 //                                .load(user.getProfilePicUrl())
 //                                .placeholder(R.mipmap.loader)
 //                                .error(R.mipmap.error)
 //                                .into(userKaPhoto);
+
+//                        new LoadImageTask(new LoadImageTask.Listener() {
+//                            @Override
+//                            public void onImageLoaded(Bitmap bitmap) {
+//                                userKaPhoto.setImageBitmap(bitmap);
+//                            }
+//
+//                            @Override
+//                            public void onError() {
+//
+//                            }
+//                        }).execute(user.getProfilePicUrl());
+//                        if (photoToBeDisplayed != null){
+//                            userKaPhoto.setImageBitmap(photoToBeDisplayed);
+//                        }
 
                         pD.dismiss();
 
@@ -505,35 +511,6 @@ public class DashboardActivity extends AppCompatActivity
         });
     }
 
-    public class MyAsync extends AsyncTask<String, Void, Bitmap>{
-
-        @Override
-        protected Bitmap doInBackground(String... params) {
-
-            try {
-                URL url = new URL(params[0]);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                photoToBeDisplayed = BitmapFactory.decodeStream(input);
-                return photoToBeDisplayed;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-
-            oA.onSuccess(photoToBeDisplayed);
-
-        }
-    }
-
 //    public static Drawable LoadImageFromWebOperations(String url) {
 //        try {
 //            InputStream is = (InputStream) new URL(url).getContent();
@@ -547,5 +524,4 @@ public class DashboardActivity extends AppCompatActivity
     public void setActionBarTitle(String title){
         toolbar.setTitle(title);
     }
-
 }

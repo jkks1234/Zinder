@@ -120,8 +120,10 @@ public class GPSTracker implements LocationListener {
 
 //                        onGettingLocation.onSuccess(location);
 //                    }
-//                    updateGPSCoordinates();
-//                    getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
+                    else {
+                        updateGPSCoordinates();
+                        getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
+                    }
                 }
                 else{
                     getLL.onError("Location Not Found");
