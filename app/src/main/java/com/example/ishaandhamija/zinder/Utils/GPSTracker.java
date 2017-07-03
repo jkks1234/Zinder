@@ -3,6 +3,7 @@ package com.example.ishaandhamija.zinder.Utils;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,7 +23,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.ishaandhamija.zinder.Activities.DashboardActivity;
+import com.example.ishaandhamija.zinder.AsyncTasks.LocationAsyncTask;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
+import com.example.ishaandhamija.zinder.Interfaces.OnGettingLocation;
 import com.example.ishaandhamija.zinder.R;
 
 import java.io.IOException;
@@ -40,7 +43,7 @@ public class GPSTracker implements LocationListener {
     private static String TAG = GPSTracker.class.getName();
     private final Context mContext;
     private final LocationManager locationManager;
-
+    ProgressDialog progressDialog;
     GetLL getLL;
 
     boolean isGPSEnabled = false;
@@ -106,11 +109,19 @@ public class GPSTracker implements LocationListener {
 
                 if (locationManager != null) {
                     //noinspection MissingPermission
-                    while (location == null) {
+//                    while (location == null) {
+//                    LocationAsyncTask locationAsyncTask = new LocationAsyncTask(location, locationManager, provider_info);
                         location = locationManager.getLastKnownLocation(provider_info);
-                    }
-                    updateGPSCoordinates();
-                    getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
+                        if (location == null){
+                            progressDialog = new ProgressDialog(ctx);
+                            progressDialog.setMessage("Fetching Location...");
+                            progressDialog.show();
+                        }
+
+//                        onGettingLocation.onSuccess(location);
+//                    }
+//                    updateGPSCoordinates();
+//                    getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
                 }
                 else{
                     getLL.onError("Location Not Found");
@@ -268,6 +279,20 @@ public class GPSTracker implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+//        onGettingLocation = new OnGettingLocation() {
+//            @Override
+//            public void onSuccess(Location location1) {
+//                location1 = location;
+//            }
+//        };
+//        this.location = location;
+        Log.d("Badla", "onLocationChanged: ");
+        this.location = location;
+        updateGPSCoordinates();
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
+        getLL.onSuccess(ctx, getAddressLine(ctx), getLocality(ctx), getLatitude().toString(), getLongitude().toString(), rvList);
     }
 
     @Override

@@ -11,11 +11,14 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -42,12 +45,14 @@ import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
+import com.example.ishaandhamija.zinder.AsyncTasks.LocationAsyncTask;
 import com.example.ishaandhamija.zinder.Fragments.DashBoardFragment;
 import com.example.ishaandhamija.zinder.Fragments.FavouritePlacesFragment;
 import com.example.ishaandhamija.zinder.Fragments.FindMatchFragment;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
 import com.example.ishaandhamija.zinder.Interfaces.GetResponse;
 import com.example.ishaandhamija.zinder.Interfaces.OnAuthentication;
+import com.example.ishaandhamija.zinder.Interfaces.OnGettingLocation;
 import com.example.ishaandhamija.zinder.Models.Restaurant;
 import com.example.ishaandhamija.zinder.Models.User2;
 import com.example.ishaandhamija.zinder.R;
@@ -77,7 +82,8 @@ public class DashboardActivity extends AppCompatActivity
     public static final String TAG = "LOCATION";
     Context ctx;
     Activity activity;
-    String latitude, longitude, city = null, area;
+    Activity mActivity = DashboardActivity.this;
+    String latitude, longitude, city, area;
     NearbyRestaurants nr;
     SearchRestaurants sr;
     ProgressDialog pDialog;
@@ -327,62 +333,76 @@ public class DashboardActivity extends AppCompatActivity
 
     public void getYourLocation(){
 
-        final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Log.d("Dhund", "getYourLocation: ");
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("Dhundaa", "getYourLocation: ");
-                gpsTracker = new GPSTracker(ctx, locationManager, getLL, ctx, rvList);
-
-                if (gpsTracker.getIsGPSTrackingEnabled())
-                {
-
-                    Log.d("Dhundo", "getYourLocation: " + "Finding");
-
-                    latitude = String.valueOf(gpsTracker.getLatitude());
-
-                    longitude = String.valueOf(gpsTracker.getLongitude());
-
-                    city = gpsTracker.getLocality(ctx);
-
-                    area = gpsTracker.getAddressLine(ctx);
-
-                }
-                else
-                {
-                    gpsTracker.showSettingsAlert();
-                }
-            }
-        }, 5000);
-
-//        Log.d("Dhundaa", "getYourLocation: ");
-//        gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, rvList);
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                Log.d("Dhundaa", "getYourLocation: ");
+//                gpsTracker = new GPSTracker(ctx, locationManager, getLL, ctx, rvList);
 //
-//        if (gpsTracker.getIsGPSTrackingEnabled())
-//        {
+//                if (gpsTracker.getIsGPSTrackingEnabled())
+//                {
 //
-//            Log.d("Dhundo", "getYourLocation: " + "Finding");
+//                    Log.d("Dhundo", "getYourLocation: " + "Finding");
 //
-//            latitude = String.valueOf(gpsTracker.getLatitude());
+//                    latitude = String.valueOf(gpsTracker.getLatitude());
 //
-//            longitude = String.valueOf(gpsTracker.getLongitude());
+//                    longitude = String.valueOf(gpsTracker.getLongitude());
 //
-//            city = gpsTracker.getLocality(this);
+//                    city = gpsTracker.getLocality(ctx);
 //
-//            area = gpsTracker.getAddressLine(this);
+//                    area = gpsTracker.getAddressLine(ctx);
 //
-////            latitude = "28.6961";
-////            longitude = "77.1527";
-////            city = "New Delhi";
-////            area = "Kohat Enclave";
-////            getLL.onSuccess(ctx, area, city, latitude, longitude,rvList);
-//
-//        }
-//        else
-//        {
-//            gpsTracker.showSettingsAlert();
-//        }
+//                }
+//                else
+//                {
+//                    gpsTracker.showSettingsAlert();
+//                }
+//            }
+//        }, 5000);
+
+        Log.d("Dhundaa", "getYourLocation: ");
+        gpsTracker = new GPSTracker(this, locationManager, getLL, ctx, rvList);
+        Log.d("Dhun", "getYourLocation: ");
+
+//        final LocationAsyncTask locationAsyncTask = new LocationAsyncTask(ctx, getLL, rvList, locationManager);
+
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//                gpsTracker = new GPSTracker(ctx, locationManager, getLL, ctx, rvList);
+//                Log.d("Result", "run: ");
+//                onGettingLocation.onSuccess(gpsTracker, latitude, longitude, city, area);
+//            }
+//        }).start();
+
+        if (gpsTracker.getIsGPSTrackingEnabled())
+        {
+
+            Log.d("Dhundo", "getYourLocation: " + "Finding");
+
+            latitude = String.valueOf(gpsTracker.getLatitude());
+
+            longitude = String.valueOf(gpsTracker.getLongitude());
+
+            city = gpsTracker.getLocality(this);
+
+            area = gpsTracker.getAddressLine(this);
+
+//            latitude = "28.6961";
+//            longitude = "77.1527";
+//            city = "New Delhi";
+//            area = "Kohat Enclave";
+//            getLL.onSuccess(ctx, area, city, latitude, longitude,rvList);
+
+        }
+        else
+        {
+            gpsTracker.showSettingsAlert();
+        }
 
     }
 
@@ -402,28 +422,28 @@ public class DashboardActivity extends AppCompatActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    class LoadingAysncTask extends AsyncTask<Void, Void, Void>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog.setMessage("Loading...");
-            pDialog.setCancelable(false);
-            pDialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (pDialog.isShowing())
-                pDialog.dismiss();
-        }
-    }
+//    class LoadingAysncTask extends AsyncTask<Void, Void, Void>{
+//
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            pDialog.setMessage("Loading...");
+//            pDialog.setCancelable(false);
+//            pDialog.show();
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Void aVoid) {
+//            super.onPostExecute(aVoid);
+//            if (pDialog.isShowing())
+//                pDialog.dismiss();
+//        }
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -514,15 +534,15 @@ public class DashboardActivity extends AppCompatActivity
         }
     }
 
-    public static Drawable LoadImageFromWebOperations(String url) {
-        try {
-            InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, "src name");
-            return d;
-        } catch (Exception e) {
-            return null;
-        }
-    }
+//    public static Drawable LoadImageFromWebOperations(String url) {
+//        try {
+//            InputStream is = (InputStream) new URL(url).getContent();
+//            Drawable d = Drawable.createFromStream(is, "src name");
+//            return d;
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     public void setActionBarTitle(String title){
         toolbar.setTitle(title);
