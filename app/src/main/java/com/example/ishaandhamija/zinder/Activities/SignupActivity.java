@@ -47,7 +47,7 @@ import java.util.ArrayList;
 
 public class SignupActivity extends AppCompatActivity {
 
-    EditText inputEmail, inputPassword, inputName, inputAge, inputSex, inputCity;
+    EditText inputEmail, inputPassword, inputName, inputAge, inputSex, inputCity, inputContactNo;
     Button btnSignIn, btnSignUp, btnResetPassword;
     ProgressBar progressBar;
     FirebaseAuth auth;
@@ -60,7 +60,7 @@ public class SignupActivity extends AppCompatActivity {
     Uri userPicUri = null;
     String userPicUrl = null;
     OnAuthentication onAuth;
-    String name, city, email, password;
+    String name, city, email, password, contactNo;
     Integer age, sex;
 
     private static final int INTENT_REQUEST_GET_IMAGES = 13;
@@ -87,6 +87,7 @@ public class SignupActivity extends AppCompatActivity {
         inputName = (EditText) findViewById(R.id.name);
         inputSex = (EditText) findViewById(R.id.sex);
         inputCity = (EditText) findViewById(R.id.city);
+        inputContactNo = (EditText) findViewById(R.id.contactNo);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnResetPassword = (Button) findViewById(R.id.btn_reset_password);
         userImage = (ImageView) findViewById(R.id.userImage);
@@ -145,6 +146,7 @@ public class SignupActivity extends AppCompatActivity {
                     sex = 2;
                 }
                 city = inputCity.getText().toString().trim();
+                contactNo = inputContactNo.getText().toString();
                 email = inputEmail.getText().toString().trim();
                 password = inputPassword.getText().toString().trim();
 
@@ -165,6 +167,11 @@ public class SignupActivity extends AppCompatActivity {
 
                 if (TextUtils.isEmpty(city)){
                     Toast.makeText(getApplicationContext(), "Enter City!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (TextUtils.isEmpty(contactNo)){
+                    Toast.makeText(getApplicationContext(), "Enter Contact Number!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -232,15 +239,15 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Bitmap a) {
                 if (TextUtils.isEmpty(userId)) {
-                    createUser(name, age, sex, city, email, password);
+                    createUser(name, age, sex, city, contactNo, email, password);
                 } else {
-                    updateUser(name, age, sex, city, email, password);
+                    updateUser(name, age, sex, city, contactNo, email, password);
                 }
             }
         };
 
     }
-    public void createUser(String name, Integer age, Integer sex, String city, String email, String password) {
+    public void createUser(String name, Integer age, Integer sex, String city, String contactNo, String email, String password) {
 
         if (TextUtils.isEmpty(userId)) {
             userr = auth.getCurrentUser();
@@ -249,7 +256,7 @@ public class SignupActivity extends AppCompatActivity {
 
         ArrayList<Restaurant> al = new ArrayList<>();
 
-        User2 user = new User2(name, age, sex, city, userPicUrl, email, password, al);
+        User2 user = new User2(name, age, sex, city, contactNo, userPicUrl, email, password, al, null);
 
         firebaseDatabase.child(userId).setValue(user);
 
@@ -281,7 +288,7 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
-    public void updateUser(String name, Integer age, Integer sex, String city, String email, String password) {
+    public void updateUser(String name, Integer age, Integer sex, String city, String contactNo, String email, String password) {
 
         if (!TextUtils.isEmpty(name))
             firebaseDatabase.child(userId).child("name").setValue(name);
@@ -294,6 +301,9 @@ public class SignupActivity extends AppCompatActivity {
 
         if (city != null)
             firebaseDatabase.child(userId).child("city").setValue(sex);
+
+        if (contactNo != null)
+            firebaseDatabase.child(userId).child("contactNo").setValue(sex);
 
         if (!TextUtils.isEmpty(email))
             firebaseDatabase.child(userId).child("email").setValue(email);

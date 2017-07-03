@@ -165,36 +165,7 @@ public class DashboardActivity extends AppCompatActivity
                         userKaNaam.setText(user.getName());
                         userKaEmail.setText(user.getEmail());
                         userKaPhoto.setImageResource(R.mipmap.ic_launcher);
-
                         Glide.with(ctx).load(user.getProfilePicUrl()).into(userKaPhoto);
-
-//                        photoToBeDisplayed = getBitmapFromURL(user.getProfilePicUrl());
-//                        while (photoToBeDisplayed == null){
-//                            userKaPhoto.setImageResource(R.mipmap.loader);
-//                            photoToBeDisplayed = getBitmapFromURL(user.getProfilePicUrl());
-//                        }
-//                        userKaPhoto.setImageBitmap(photoToBeDisplayed);
-
-//                        Picasso.with(ctx)
-//                                .load(user.getProfilePicUrl())
-//                                .placeholder(R.mipmap.loader)
-//                                .error(R.mipmap.error)
-//                                .into(userKaPhoto);
-
-//                        new LoadImageTask(new LoadImageTask.Listener() {
-//                            @Override
-//                            public void onImageLoaded(Bitmap bitmap) {
-//                                userKaPhoto.setImageBitmap(bitmap);
-//                            }
-//
-//                            @Override
-//                            public void onError() {
-//
-//                            }
-//                        }).execute(user.getProfilePicUrl());
-//                        if (photoToBeDisplayed != null){
-//                            userKaPhoto.setImageBitmap(photoToBeDisplayed);
-//                        }
 
                         pD.dismiss();
 
@@ -398,12 +369,6 @@ public class DashboardActivity extends AppCompatActivity
 
             area = gpsTracker.getAddressLine(this);
 
-//            latitude = "28.6961";
-//            longitude = "77.1527";
-//            city = "New Delhi";
-//            area = "Kohat Enclave";
-//            getLL.onSuccess(ctx, area, city, latitude, longitude,rvList);
-
         }
         else
         {
@@ -510,16 +475,6 @@ public class DashboardActivity extends AppCompatActivity
             }
         });
     }
-
-//    public static Drawable LoadImageFromWebOperations(String url) {
-//        try {
-//            InputStream is = (InputStream) new URL(url).getContent();
-//            Drawable d = Drawable.createFromStream(is, "src name");
-//            return d;
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
 
     public void setActionBarTitle(String title){
         toolbar.setTitle(title);

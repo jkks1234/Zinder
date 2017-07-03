@@ -11,6 +11,9 @@ public class Profile {
     Integer age;
     String location;
 
+    public Profile() {
+    }
+
     public Profile(String url, String name, Integer age, String location) {
         this.url = url;
         this.name = name;
