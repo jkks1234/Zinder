@@ -188,7 +188,7 @@ public class TinderCard {
             otherUserSex = 'm';
         }
         if (otherUserSex == 'f') {
-            String message = "Your blind dated is fixed with Ms. " + user.getName() + ".\nHer Details " +
+            CharSequence message = "Your blind dated is fixed with Ms. " + user.getName() + ".\nHer Details " +
                     "and Contact Number has been sent to you via SMS, kindly choose a nice place for her :)";
             String title="Match Found";
             int icon = R.drawable.dinner;
@@ -209,7 +209,7 @@ public class TinderCard {
             notificationManager.notify(0, notification);
         }
         else{
-            String message = "Your blind dated is fixed with Mr. " + user.getName() + ".\nHis Details " +
+            String message = "Your blind date is fixed with Mr. " + user.getName() + "." + "\n" + "His Details " +
                     "and Contact Number has been sent to you via SMS, kindly choose a nice place for him :)";
             String title="Match Found";
             int icon = R.drawable.dinner;
@@ -275,6 +275,7 @@ public class TinderCard {
             } else {
                 SmsManager smsmanager = SmsManager.getDefault();
                 smsmanager.sendTextMessage(phno, null, msg, null, null);
+                Log.d("YahaHu", "sendMessage: " + phno);
                 return true;
             }
         }
