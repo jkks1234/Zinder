@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.ishaandhamija.zinder.Activities.DashboardActivity;
 import com.example.ishaandhamija.zinder.R;
 
 /**
@@ -38,6 +39,8 @@ public class DeveloperInfoFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_developer_info, container, false);
+
+        ((DashboardActivity) getActivity()).setActionBarTitle("Developer's Info");
 
         mail = (TextView) rootView.findViewById(R.id.mail);
         fb = (ImageView) rootView.findViewById(R.id.fb);
