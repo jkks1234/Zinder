@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="mail" type="id" />
+    <item name="fb" type="id" />
+    <item name="gh" type="id" />
+    <item name="li" type="id" />
+</resources>

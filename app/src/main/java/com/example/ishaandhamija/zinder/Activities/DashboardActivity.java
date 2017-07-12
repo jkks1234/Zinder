@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.ishaandhamija.zinder.Fragments.DashBoardFragment;
+import com.example.ishaandhamija.zinder.Fragments.DeveloperInfoFragment;
 import com.example.ishaandhamija.zinder.Fragments.FavouritePlacesFragment;
 import com.example.ishaandhamija.zinder.Fragments.FindMatchFragment;
 import com.example.ishaandhamija.zinder.Interfaces.GetLL;
@@ -296,7 +297,12 @@ public class DashboardActivity extends AppCompatActivity
 
         } else if (id == R.id.aboutUs) {
 
-            Toast.makeText(ctx, "About Us mein Jayenge", Toast.LENGTH_SHORT).show();
+            fragManager = getSupportFragmentManager();
+            DeveloperInfoFragment developerInfoFragment = new DeveloperInfoFragment(this);
+            fragTxn = fragManager.beginTransaction();
+            fragTxn.replace(R.id.fragContainer, developerInfoFragment);
+            fragTxn.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            fragTxn.commit();
 
         } else if (id == R.id.logout) {
             FirebaseAuth.getInstance().signOut();

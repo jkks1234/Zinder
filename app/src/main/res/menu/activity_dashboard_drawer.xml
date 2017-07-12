@@ -21,7 +21,7 @@
             <item
                 android:id="@+id/aboutUs"
                 android:icon="@drawable/ic_menu_share"
-                android:title="About Us" />
+                android:title="Developer's Info" />
             <item
                 android:id="@+id/logout"
                 android:icon="@drawable/ic_menu_send"
