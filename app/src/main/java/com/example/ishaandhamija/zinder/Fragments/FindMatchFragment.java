@@ -24,6 +24,7 @@ import com.example.ishaandhamija.zinder.TinderFeature.TinderCard;
 import com.example.ishaandhamija.zinder.TinderFeature.Utils;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -49,6 +50,7 @@ public class FindMatchFragment extends Fragment {
     ArrayList<Profile> selectedUserProfiles;
     GetUsers getUsers;
     ProgressDialog loadingDialog;
+    FirebaseAuth auth;
 
     public static final String TAG = "UUU";
 
@@ -76,6 +78,7 @@ public class FindMatchFragment extends Fragment {
         selectedUsers = new ArrayList<>();
         selectedUserProfiles = new ArrayList<>();
         loadingDialog = ProgressDialog.show(mContext, "", "Loading. Please wait...", true);
+        auth = FirebaseAuth.getInstance();
 
         Firebase.setAndroidContext(mContext);
         userRef = new Firebase("https://zinder-dc0b2.firebaseio.com/").child("userss");
@@ -83,6 +86,8 @@ public class FindMatchFragment extends Fragment {
         userRef.addValueEventListener(new com.firebase.client.ValueEventListener() {
             @Override
             public void onDataChange(com.firebase.client.DataSnapshot dataSnapshot) {
+                Log.d("Seethis", "onDataChange: " + auth.getCurrentUser().getUid());
+                Log.d("Seethis", "onDataChange: " + auth.getCurrentUser().getEmail());
                 for (com.firebase.client.DataSnapshot snap : dataSnapshot.getChildren()){
                     User2 user = snap.getValue(User2.class);
                     allUsers.add(user);
@@ -104,6 +109,7 @@ public class FindMatchFragment extends Fragment {
 //                if (mySelectedRestaurants != null) {
                     for (int i = 0; i < userList.size(); i++) {
                         User2 ekUser = userList.get(i);
+
 //                        if (ekUser.getRestaurants() != null) {
 //                            ArrayList<Restaurant> ekUserKeRestaurants = ekUser.getRestaurants();
 //                            for (int j = 0; j < ekUserKeRestaurants.size(); j++) {

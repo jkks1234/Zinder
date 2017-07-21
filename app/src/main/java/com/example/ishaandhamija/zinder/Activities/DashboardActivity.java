@@ -110,7 +110,7 @@ public class DashboardActivity extends AppCompatActivity
 
         pD = new ProgressDialog(this);
         pD.setMessage("Fetching Nearby Restaurants...");
-        pD.setCancelable(false);
+//        pD.setCancelable(false);
         pD.show();
 
 //        photoToBeDisplayed = getBitmapFromURL(auth.getCurrentUser().getPhotoUrl().toString());

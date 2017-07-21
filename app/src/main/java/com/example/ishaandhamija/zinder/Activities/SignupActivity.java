@@ -2,6 +2,7 @@ package com.example.ishaandhamija.zinder.Activities;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -42,8 +44,11 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.gun0912.tedpicker.Config;
 import com.gun0912.tedpicker.ImagePickerActivity;
+import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.util.ArrayList;
+
+import static android.R.attr.data;
 
 public class SignupActivity extends AppCompatActivity {
 
@@ -64,6 +69,7 @@ public class SignupActivity extends AppCompatActivity {
     Integer age, sex;
 
     private static final int INTENT_REQUEST_GET_IMAGES = 13;
+    private static final int galler=1;
 
     String userId;
 
@@ -320,28 +326,72 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void getImages() {
-        Config config = new Config();
-        config.setSelectionMin(1);
-        config.setSelectionLimit(1);
-        ImagePickerActivity.setConfig(config);
+//        Config config = new Config();
+//        config.setSelectionMin(1);
+//        config.setSelectionLimit(1);
+//        ImagePickerActivity.setConfig(config);
+//
+//        Intent intent  = new Intent(this, ImagePickerActivity.class);
+//        startActivityForResult(intent,INTENT_REQUEST_GET_IMAGES);
 
-        Intent intent  = new Intent(this, ImagePickerActivity.class);
-        startActivityForResult(intent,INTENT_REQUEST_GET_IMAGES);
+        CharSequence cameraOptions[] = new CharSequence[] {"Camera", "Gallery"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose one option");
+        builder.setItems(cameraOptions, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0){
+                    Toast.makeText(SignupActivity.this, "Camera", Toast.LENGTH_SHORT).show();
+                }
+                else if (which == 1){
+                    Intent i=new Intent(Intent.ACTION_PICK);
+                    i.setType("image/*");
+                    startActivityForResult(i,INTENT_REQUEST_GET_IMAGES);
+                }
+            }
+        });
+        builder.show();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resuleCode, Intent intent) {
-        super.onActivityResult(requestCode, resuleCode, intent);
 
-        if (requestCode == INTENT_REQUEST_GET_IMAGES && resuleCode == Activity.RESULT_OK ) {
-
-            ArrayList<Uri>  image_uris = intent.getParcelableArrayListExtra(ImagePickerActivity.EXTRA_IMAGE_URIS);
-            userPicUri = Uri.parse("file://" + image_uris.get(0).toString());
-            userImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            userImage.setImageURI(image_uris.get(0));
+        if(requestCode==INTENT_REQUEST_GET_IMAGES && resuleCode==RESULT_OK)
+        {
+            Uri image=intent.getData();
+            CropImage.activity(image)
+                    .setGuidelines(com.theartofdev.edmodo.cropper.CropImageView.Guidelines.ON)
+                    .setAspectRatio(100,100)
+                    .start(SignupActivity.this);
 
         }
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(intent);
+            if (resuleCode == RESULT_OK) {
+                Uri resultUri = result.getUri();
+                Log.d("CROP", "onActivityResult: " + resultUri);
+                userImage.setImageURI(resultUri);
+//                post_image=resultUri;
+//                Toast.makeText(this, "Onto the posting job", Toast.LENGTH_SHORT).show();
+//                minsert.setImageURI(resultUri);/*here i set the image uri to the imagevieeew*/
+            } else if (resuleCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
+        }
+
+        super.onActivityResult(requestCode, resuleCode, intent);
     }
+
+//        if (requestCode == INTENT_REQUEST_GET_IMAGES && resuleCode == Activity.RESULT_OK ) {
+//
+//            ArrayList<Uri>  image_uris = intent.getParcelableArrayListExtra(ImagePickerActivity.EXTRA_IMAGE_URIS);
+//            userPicUri = Uri.parse("file://" + image_uris.get(0).toString());
+//            userImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//            userImage.setImageURI(image_uris.get(0));
+//
+//        }
+//    }
 
     private void uploadImage(Uri uri){
 
