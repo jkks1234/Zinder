@@ -116,7 +116,7 @@ public class GPSTracker implements LocationListener {
                             progressDialog = new ProgressDialog(ctx);
                             progressDialog.setMessage("Fetching Location...");
                             progressDialog.show();
-//                            progressDialog.setCanceledOnTouchOutside(false);
+                            progressDialog.setCanceledOnTouchOutside(false);
                         }
 
 //                        onGettingLocation.onSuccess(location);

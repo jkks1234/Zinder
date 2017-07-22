@@ -24,6 +24,10 @@
         <item name="autoCompleteTextViewStyle">@style/cursorColor</item>
     </style>
 
+    <!--<style name="squarecamera__CameraFullScreenTheme."></style>-->
+
+    <style name="squarecamera__CameraFullScreenTheme"></style>
+
     <style name="cursorColor" parent="Widget.AppCompat.AutoCompleteTextView">
         <item name="android:textCursorDrawable">@drawable/cursor</item>
     </style>

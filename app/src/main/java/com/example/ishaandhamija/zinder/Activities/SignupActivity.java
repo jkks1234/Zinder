@@ -1,15 +1,19 @@
 package com.example.ishaandhamija.zinder.Activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.desmond.squarecamera.CameraActivity;
 import com.example.ishaandhamija.zinder.Interfaces.OnAuthentication;
 import com.example.ishaandhamija.zinder.Models.Restaurant;
 import com.example.ishaandhamija.zinder.Models.User2;
@@ -69,7 +74,9 @@ public class SignupActivity extends AppCompatActivity {
     Integer age, sex;
 
     private static final int INTENT_REQUEST_GET_IMAGES = 13;
-    private static final int galler=1;
+    private static final int galler = 1;
+    private static final int REQ_CODE = 1991;
+    private static final int REQUEST_CAMERA = 0101;
 
     String userId;
 
@@ -143,7 +150,7 @@ public class SignupActivity extends AppCompatActivity {
 
                 name = inputName.getText().toString().trim();
                 final String stringAge = inputAge.getText().toString().trim();
-                age = Integer.parseInt(stringAge);
+//                age = Integer.parseInt(stringAge);
                 String stringSex = inputSex.getText().toString().trim();
                 if (stringSex.equals("MALE") || stringSex.equals("Male") || stringSex.equals("M") || stringSex.equals("m") || stringSex.equals("male")){
                     sex = 1;
@@ -195,6 +202,8 @@ public class SignupActivity extends AppCompatActivity {
                     inputPassword.setError("Password too short, enter minimum 6 characters!");
                     return;
                 }
+
+                age = Integer.parseInt(stringAge);
 
                 if (age < 0 || age > 100) {
                     inputAge.setError("Enter Correct Age!");
@@ -326,23 +335,25 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void getImages() {
-//        Config config = new Config();
-//        config.setSelectionMin(1);
-//        config.setSelectionLimit(1);
-//        ImagePickerActivity.setConfig(config);
-//
-//        Intent intent  = new Intent(this, ImagePickerActivity.class);
-//        startActivityForResult(intent,INTENT_REQUEST_GET_IMAGES);
 
         CharSequence cameraOptions[] = new CharSequence[] {"Camera", "Gallery"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose one option");
+        builder.setTitle("Choose an option");
         builder.setItems(cameraOptions, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0){
                     Toast.makeText(SignupActivity.this, "Camera", Toast.LENGTH_SHORT).show();
+                    int cameraPerm = ContextCompat.checkSelfPermission(SignupActivity.this, Manifest.permission.CAMERA);
+                    if (cameraPerm != PackageManager.PERMISSION_GRANTED){
+                        ActivityCompat.requestPermissions(SignupActivity.this, new String[]{
+                                Manifest.permission.CAMERA
+                        }, REQ_CODE);
+                    }
+                    else {
+                        takeFromCamera();
+                    }
                 }
                 else if (which == 1){
                     Intent i=new Intent(Intent.ACTION_PICK);
@@ -359,7 +370,7 @@ public class SignupActivity extends AppCompatActivity {
 
         if(requestCode==INTENT_REQUEST_GET_IMAGES && resuleCode==RESULT_OK)
         {
-            Uri image=intent.getData();
+            Uri image = intent.getData();
             CropImage.activity(image)
                     .setGuidelines(com.theartofdev.edmodo.cropper.CropImageView.Guidelines.ON)
                     .setAspectRatio(100,100)
@@ -370,28 +381,47 @@ public class SignupActivity extends AppCompatActivity {
             CropImage.ActivityResult result = CropImage.getActivityResult(intent);
             if (resuleCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
-                Log.d("CROP", "onActivityResult: " + resultUri);
+                userPicUri = resultUri;
                 userImage.setImageURI(resultUri);
-//                post_image=resultUri;
-//                Toast.makeText(this, "Onto the posting job", Toast.LENGTH_SHORT).show();
-//                minsert.setImageURI(resultUri);/*here i set the image uri to the imagevieeew*/
             } else if (resuleCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
         }
 
+        if (resuleCode != RESULT_OK) return;
+
+        if (requestCode == REQUEST_CAMERA) {
+            Uri photoUri = intent.getData();
+            CropImage.activity(photoUri)
+                    .setGuidelines(com.theartofdev.edmodo.cropper.CropImageView.Guidelines.ON)
+                    .setAspectRatio(100,100)
+                    .start(SignupActivity.this);
+        }
+
         super.onActivityResult(requestCode, resuleCode, intent);
     }
 
-//        if (requestCode == INTENT_REQUEST_GET_IMAGES && resuleCode == Activity.RESULT_OK ) {
-//
-//            ArrayList<Uri>  image_uris = intent.getParcelableArrayListExtra(ImagePickerActivity.EXTRA_IMAGE_URIS);
-//            userPicUri = Uri.parse("file://" + image_uris.get(0).toString());
-//            userImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//            userImage.setImageURI(image_uris.get(0));
-//
-//        }
-//    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        if (requestCode == REQ_CODE) {
+            for (int result : grantResults) {
+                if (result == PackageManager.PERMISSION_DENIED) {
+                    Toast.makeText(this, "Permission Not Given", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+            }
+            takeFromCamera();
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    private void takeFromCamera(){
+        Intent startCustomCameraIntent = new Intent(this, CameraActivity.class);
+        startActivityForResult(startCustomCameraIntent, REQUEST_CAMERA);
+    }
 
     private void uploadImage(Uri uri){
 
