@@ -344,7 +344,6 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0){
-                    Toast.makeText(SignupActivity.this, "Camera", Toast.LENGTH_SHORT).show();
                     int cameraPerm = ContextCompat.checkSelfPermission(SignupActivity.this, Manifest.permission.CAMERA);
                     if (cameraPerm != PackageManager.PERMISSION_GRANTED){
                         ActivityCompat.requestPermissions(SignupActivity.this, new String[]{
